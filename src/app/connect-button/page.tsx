@@ -2,8 +2,8 @@
 import type { NextPage } from "next";
 import { ConnectButton } from "thirdweb/react";
 import { client } from "../../lib/client";
-import { generatePayload, isLoggedIn, login, logout } from "./actions/auth";
-import { LoginPayload, VerifyLoginPayloadParams } from "thirdweb/auth";
+import { authedOnly, generatePayload, isLoggedIn, login, logout } from "./actions/auth";
+import { GenerateLoginPayloadParams, LoginPayload, VerifyLoginPayloadParams } from "thirdweb/auth";
 import {
   createWallet,
   inAppWallet,
@@ -22,9 +22,9 @@ const ConnectButtonPage: NextPage = () => {
     inAppWallet({
       auth: {
         options: [
-          // 'farcaster',
-          // 'discord',
-          // 'passkey',
+          'farcaster',
+          'discord',
+          'passkey',
           'phone',
           'apple',
           'google',
@@ -39,49 +39,10 @@ const ConnectButtonPage: NextPage = () => {
 
   const storyTestnet = defineChain(1513);
 
-  const paywallConfig = {
-    icon: 'https://storage.unlock-protocol.com/7b2b45eb-ed97-4a1a-b460-b31ce79d087d',
-    locks: {
-      '0xad597e5b24ad2a6032168c76f49f05d957223cd0': {
-        name: 'Annual Creator Pass',
-        order: 2,
-        network: 137,
-        recipient: '',
-        dataBuilder: '',
-        emailRequired: true,
-        maxRecipients: 1,
-        skipRecipient: true,
-        recurringPayments: 'forever',
-      },
-      '0xb6b645c3e2025cf69983983266d16a0aa323e2b0': {
-        name: 'Creator Pass (3 months)',
-        order: 2,
-        network: 137,
-        recipient: '',
-        dataBuilder: '',
-        emailRequired: true,
-        maxRecipients: 1,
-        recurringPayments: 'forever',
-      },
-    },
-    title: 'The Creative Membership',
-    referrer: '0x1Fde40a4046Eda0cA0539Dd6c77ABF8933B94260',
-    skipSelect: false,
-    hideSoldOut: false,
-    pessimistic: true,
-    redirectUri: 'https://tv.creativeplatform.xyz',
-    messageToSign:
-      "Welcome to The Creative, Where Creativity Meets Opportunity!\n\n🌟 Your Creative Space Awaits!\nDive into a world where your art transforms into opportunity. By joining our platform, you're not just accessing tools; you're amplifying your creative voice and reaching audiences who value your work.\n\n🔗 Connect & Collaborate\nEngage with a network of fellow creatives. Share, collaborate, and grow together. Our community thrives on the diversity of its members and the strength of its connections.\n\n💡 Tools for Every Creator\nFrom seamless transactions to intuitive marketing tools, everything you need is right here. Focus on creating—we handle the rest, ensuring your creations are protected and your earnings are secure.\n\n✨ Support on Your Creative Journey\nOur dedicated support team is just a message away, ready to assist you with any questions or to provide guidance as you navigate your creative path.\n\nThank You for Choosing The Creative\nTogether, we’re building a thriving economy of artists, by artists. Let’s create and inspire!",
-    skipRecipient: false,
-    endingCallToAction: 'Complete Checkout',
-    persistentCheckout: false,
-  };
-
   return (
     <ConnectButton
-      autoConnect={false}
       client={client}
-      chains={[polygon, base, optimism, storyTestnet, zora, zoraSepolia]}
+      chains={[base]}
       connectButton={{
         label: 'Get Started',
         className: 'my-custom-class',
@@ -131,7 +92,7 @@ const ConnectButtonPage: NextPage = () => {
         },
       }}
       auth={{
-        getLoginPayload: async (params: { address: string, chainId: number }) => {
+        getLoginPayload: async (params: GenerateLoginPayloadParams) => {
           console.log({ getLoginPayloadParams: params });
 
           const payload = await generatePayload({ address: params.address, chainId: params.chainId });
@@ -145,11 +106,7 @@ const ConnectButtonPage: NextPage = () => {
         ): Promise<void> => {
           console.log('logging in!');
           
-          const loginPayload: LoginPayload | void = await login(params);
-          
-          console.log({ doLoginResponse: loginPayload });
-
-          return loginPayload;
+          await login(params);
         },
         isLoggedIn: async () => {
           const authedOnlyRes = await authedOnly();

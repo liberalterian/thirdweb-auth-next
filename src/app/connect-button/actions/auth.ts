@@ -17,17 +17,18 @@ const thirdwebAuth = createAuth({
 
 export const generatePayload = thirdwebAuth.generatePayload;
 
-export async function login(payload: VerifyLoginPayloadParams) {
-  const verifiedPayload = await thirdwebAuth.verifyPayload(payload);
+export async function login(params: VerifyLoginPayloadParams) {
+  const verifiedPayload = await thirdwebAuth.verifyPayload(params);
   if (verifiedPayload.valid) {
     const jwt = await thirdwebAuth.generateJWT({
       payload: verifiedPayload.payload,
+      context: { address: params.payload.address },
     });
     cookies().set("jwt", jwt);
   }
 }
 
-export async function isLoggedIn() {
+export async function authedOnly() {
   const jwt = cookies().get("jwt");
   if (!jwt?.value) {
     return false;
